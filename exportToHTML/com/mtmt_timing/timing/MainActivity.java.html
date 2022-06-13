@@ -1,0 +1,257 @@
+<html>
+<head>
+<title>MainActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+MainActivity.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.mtmt_timing.team_project</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.appcompat.app.AppCompatActivity</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.app.AlarmManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.AlertDialog</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.PendingIntent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.ComponentName</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Context</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.DialogInterface</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.SharedPreferences</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.pm.PackageManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.Color</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.graphics.Paint</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.MediaPlayer</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Build</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Bundle</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.View</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.view.ViewGroup</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Button</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.EditText</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.NumberPicker</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.TextView</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.TimePicker</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.lang.reflect.Field</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.text.SimpleDateFormat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Calendar</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Date</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.GregorianCalendar</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Locale</span><span class="s0">;</span>
+
+
+<span class="s0">public class </span><span class="s1">MainActivity </span><span class="s0">extends </span><span class="s1">AppCompatActivity {</span>
+
+    <span class="s1">Button btn_timer</span><span class="s0">;</span>
+    <span class="s1">MediaPlayer mediaPlayer</span><span class="s0">;</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">onCreate(Bundle savedInstanceState) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span><span class="s0">;</span>
+        <span class="s1">setContentView(R.layout.activity_main)</span><span class="s0">;</span>
+        <span class="s1">btn_timer = (Button) findViewById(R.id.btn_timer)</span><span class="s0">;</span>
+        <span class="s1">changeActivity()</span><span class="s0">;</span>
+        <span class="s0">final </span><span class="s1">TimePicker picker = (TimePicker) findViewById(R.id.tp_timepicker)</span><span class="s0">;</span>
+
+
+        <span class="s1">picker.setIs24HourView(</span><span class="s0">true</span><span class="s1">)</span><span class="s0">;</span>
+
+
+        <span class="s2">//앞서 설정한 값으로 보여주기</span>
+        <span class="s2">//없으면 디폴트 값은 현재시간</span>
+        <span class="s1">SharedPreferences sharedPreferences = getSharedPreferences(</span><span class="s3">&quot;daily alarm&quot;</span><span class="s0">, </span><span class="s1">MODE_PRIVATE)</span><span class="s0">;</span>
+        <span class="s0">long </span><span class="s1">millis = sharedPreferences.getLong(</span><span class="s3">&quot;nextNotify Time&quot;</span><span class="s0">, </span><span class="s1">Calendar.getInstance().getTimeInMillis())</span><span class="s0">;</span>
+
+
+        <span class="s1">Calendar nextNotifyTime = </span><span class="s0">new </span><span class="s1">GregorianCalendar()</span><span class="s0">;</span>
+        <span class="s1">nextNotifyTime.setTimeInMillis(millis)</span><span class="s0">;</span>
+
+
+        <span class="s1">Date nextDate = nextNotifyTime.getTime()</span><span class="s0">;</span>
+        <span class="s1">String date_text = </span><span class="s0">new </span><span class="s1">SimpleDateFormat(</span><span class="s3">&quot;yyyy년 MM월 dd일 EE요일 a hh시 mm분&quot;</span><span class="s0">, </span><span class="s1">Locale.getDefault()).format(nextDate)</span><span class="s0">;</span>
+        <span class="s1">Toast.makeText(getApplicationContext()</span><span class="s0">, </span><span class="s3">&quot;[처음 실행시] 다음 알람은 &quot; </span><span class="s1">+ date_text + </span><span class="s3">&quot;으로 알람이 설정되었습니다&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+
+
+        <span class="s2">//이전 설정값으로 TimePicker 초기화</span>
+        <span class="s1">Date currentTime = nextNotifyTime.getTime()</span><span class="s0">;</span>
+        <span class="s1">SimpleDateFormat HourFormat = </span><span class="s0">new </span><span class="s1">SimpleDateFormat(</span><span class="s3">&quot;kk&quot;</span><span class="s0">, </span><span class="s1">Locale.getDefault())</span><span class="s0">;</span>
+        <span class="s1">SimpleDateFormat MinuteFormat = </span><span class="s0">new </span><span class="s1">SimpleDateFormat(</span><span class="s3">&quot;mm&quot;</span><span class="s0">, </span><span class="s1">Locale.getDefault())</span><span class="s0">;</span>
+
+
+        <span class="s0">int </span><span class="s1">pre_hour = Integer.parseInt(HourFormat.format(currentTime))</span><span class="s0">;</span>
+        <span class="s0">int </span><span class="s1">pre_minute = Integer.parseInt(MinuteFormat.format(currentTime))</span><span class="s0">;</span>
+
+
+        <span class="s0">if </span><span class="s1">(Build.VERSION.SDK_INT &gt;= </span><span class="s4">23</span><span class="s1">) {</span>
+            <span class="s1">picker.setHour(pre_hour)</span><span class="s0">;</span>
+            <span class="s1">picker.setMinute(pre_minute)</span><span class="s0">;</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s1">picker.setCurrentHour(pre_hour)</span><span class="s0">;</span>
+            <span class="s1">picker.setCurrentMinute(pre_minute)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+
+        <span class="s1">Button quitbutton = (Button) findViewById(R.id.quitBtn)</span><span class="s0">;</span>
+        <span class="s1">quitbutton.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View view) {</span>
+                <span class="s1">AlertDialog.Builder builder = </span><span class="s0">new </span><span class="s1">AlertDialog.Builder(MainActivity.</span><span class="s0">this</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">builder.setMessage(</span><span class="s3">&quot;정말로 종료하시겠습니까?&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">builder.setTitle(</span><span class="s3">&quot;종료 알림창&quot;</span><span class="s1">)</span>
+                        <span class="s1">.setCancelable(</span><span class="s0">false</span><span class="s1">)</span>
+                        <span class="s1">.setPositiveButton(</span><span class="s3">&quot;Yes&quot;</span><span class="s0">, new </span><span class="s1">DialogInterface.OnClickListener() {</span>
+                            <span class="s1">@Override</span>
+                            <span class="s0">public void </span><span class="s1">onClick(DialogInterface dialog</span><span class="s0">, int </span><span class="s1">i) {</span>
+                                <span class="s1">moveTaskToBack(</span><span class="s0">true</span><span class="s1">)</span><span class="s0">;</span>
+                                <span class="s1">finishAndRemoveTask()</span><span class="s0">;</span>
+                                <span class="s1">System.exit(</span><span class="s4">0</span><span class="s1">)</span><span class="s0">;</span>
+                            <span class="s1">}</span>
+                        <span class="s1">})</span>
+                        <span class="s1">.setNegativeButton(</span><span class="s3">&quot;No&quot;</span><span class="s0">, new </span><span class="s1">DialogInterface.OnClickListener() {</span>
+                            <span class="s1">@Override</span>
+                            <span class="s0">public void </span><span class="s1">onClick(DialogInterface dialog</span><span class="s0">, int </span><span class="s1">i) {</span>
+                                <span class="s1">dialog.cancel()</span><span class="s0">;</span>
+                            <span class="s1">}</span>
+                        <span class="s1">})</span><span class="s0">;</span>
+                <span class="s1">AlertDialog alert = builder.create()</span><span class="s0">;</span>
+                <span class="s1">alert.setTitle(</span><span class="s3">&quot;종료 알림창&quot;</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">alert.show()</span><span class="s0">;</span>
+
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+
+
+
+
+        <span class="s1">Button button = (Button) findViewById(R.id.setBtn)</span><span class="s0">;</span>
+        <span class="s1">button.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View arg0) {</span>
+
+
+                <span class="s0">int </span><span class="s1">hour</span><span class="s0">, </span><span class="s1">hour_24</span><span class="s0">, </span><span class="s1">minute</span><span class="s0">;</span>
+                <span class="s1">String am_pm</span><span class="s0">;</span>
+                <span class="s0">if </span><span class="s1">(Build.VERSION.SDK_INT &gt;= </span><span class="s4">23</span><span class="s1">) {</span>
+                    <span class="s1">hour_24 = picker.getHour()</span><span class="s0">;</span>
+                    <span class="s1">minute = picker.getMinute()</span><span class="s0">;</span>
+                <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                    <span class="s1">hour_24 = picker.getCurrentHour()</span><span class="s0">;</span>
+                    <span class="s1">minute = picker.getCurrentMinute()</span><span class="s0">;</span>
+                <span class="s1">}</span>
+                <span class="s0">if </span><span class="s1">(hour_24 &gt; </span><span class="s4">12</span><span class="s1">) {</span>
+                    <span class="s1">am_pm = </span><span class="s3">&quot;PM&quot;</span><span class="s0">;</span>
+                    <span class="s1">hour = hour_24 - </span><span class="s4">12</span><span class="s0">;</span>
+                <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                    <span class="s1">hour = hour_24</span><span class="s0">;</span>
+                    <span class="s1">am_pm = </span><span class="s3">&quot;AM&quot;</span><span class="s0">;</span>
+                <span class="s1">}</span>
+
+                <span class="s2">//현재 지정된 시간으로 알람 시간 설정</span>
+                <span class="s1">Calendar calendar = Calendar.getInstance()</span><span class="s0">;</span>
+                <span class="s1">calendar.setTimeInMillis(System.currentTimeMillis())</span><span class="s0">;</span>
+                <span class="s1">calendar.set(Calendar.HOUR_OF_DAY</span><span class="s0">, </span><span class="s1">hour_24)</span><span class="s0">;</span>
+                <span class="s1">calendar.set(Calendar.MINUTE</span><span class="s0">, </span><span class="s1">minute)</span><span class="s0">;</span>
+                <span class="s1">calendar.set(Calendar.SECOND</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span><span class="s0">;</span>
+
+
+                <span class="s2">//이미 지난 시간을 지정했다면 다음날 같은 시간으로 설정</span>
+                <span class="s0">if </span><span class="s1">(calendar.before(Calendar.getInstance())) {</span>
+                    <span class="s1">calendar.add(Calendar.DATE</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+
+
+                <span class="s1">Date currentDateTime = calendar.getTime()</span><span class="s0">;</span>
+                <span class="s1">String date_text = </span><span class="s0">new </span><span class="s1">SimpleDateFormat(</span><span class="s3">&quot;yyyy년 MM월 dd일 EE요일 a hh시 mm분 &quot;</span><span class="s0">, </span><span class="s1">Locale.getDefault()).format(currentDateTime)</span><span class="s0">;</span>
+                <span class="s1">Toast.makeText(getApplicationContext()</span><span class="s0">, </span><span class="s1">date_text + </span><span class="s3">&quot;으로 알람이 설정되었습니다&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+
+
+                <span class="s2">//  Preference에 설정한 값 저장</span>
+                <span class="s1">SharedPreferences.Editor editor = getSharedPreferences(</span><span class="s3">&quot;daily alarm&quot;</span><span class="s0">, </span><span class="s1">MODE_PRIVATE).edit()</span><span class="s0">;</span>
+                <span class="s1">editor.putLong(</span><span class="s3">&quot;nextNotifyTime&quot;</span><span class="s0">, </span><span class="s1">(</span><span class="s0">long</span><span class="s1">) calendar.getTimeInMillis())</span><span class="s0">;</span>
+                <span class="s1">editor.apply()</span><span class="s0">;</span>
+
+
+                <span class="s1">diaryNotification(calendar)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+
+
+        <span class="s1">})</span><span class="s0">;</span>
+
+
+
+    <span class="s1">}</span>
+
+
+
+
+
+
+
+    <span class="s0">private void </span><span class="s1">diaryNotification(Calendar calendar) {</span>
+        <span class="s2">//        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);</span>
+<span class="s2">//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);</span>
+<span class="s2">//        Boolean dailyNotify = sharedPref.getBoolean(SettingsActivity.KEY_PREF_DAILY_NOTIFICATION, true);</span>
+        <span class="s1">Boolean dailyNotify = </span><span class="s0">true;</span>
+        <span class="s1">PackageManager pm = </span><span class="s0">this</span><span class="s1">.getPackageManager()</span><span class="s0">;</span>
+        <span class="s1">ComponentName receiver = </span><span class="s0">new </span><span class="s1">ComponentName(</span><span class="s0">this, </span><span class="s1">DeviceBootReceiver.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">Intent alarmIntent = </span><span class="s0">new </span><span class="s1">Intent(</span><span class="s0">this, </span><span class="s1">AlarmReceiver.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">PendingIntent pendingIntent = PendingIntent.getBroadcast(</span><span class="s0">this, </span><span class="s4">0</span><span class="s0">, </span><span class="s1">alarmIntent</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE)</span><span class="s0">;</span>
+
+
+        <span class="s2">// 사용자가 매일 알람을 허용했다면</span>
+        <span class="s0">if </span><span class="s1">(dailyNotify) {</span>
+
+
+            <span class="s0">if </span><span class="s1">(alarmManager != </span><span class="s0">null</span><span class="s1">) {</span>
+
+                <span class="s1">alarmManager.setRepeating(AlarmManager.RTC_WAKEUP</span><span class="s0">, </span><span class="s1">calendar.getTimeInMillis()</span><span class="s0">,</span>
+                        <span class="s1">AlarmManager.INTERVAL_DAY</span><span class="s0">, </span><span class="s1">pendingIntent)</span><span class="s0">;</span>
+
+                <span class="s0">if </span><span class="s1">(Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.M) {</span>
+                    <span class="s1">alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP</span><span class="s0">, </span><span class="s1">calendar.getTimeInMillis()</span><span class="s0">, </span><span class="s1">pendingIntent)</span><span class="s0">;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+
+            <span class="s2">// 부팅 후 실행되는 리시버 사용가능하게 설정</span>
+            <span class="s1">pm.setComponentEnabledSetting(receiver</span><span class="s0">,</span>
+                    <span class="s1">PackageManager.COMPONENT_ENABLED_STATE_ENABLED</span><span class="s0">,</span>
+                    <span class="s1">PackageManager.DONT_KILL_APP)</span><span class="s0">;</span>
+
+        <span class="s1">}</span>
+<span class="s2">//        else { //Disable Daily Notifications</span>
+<span class="s2">//            if (PendingIntent.getBroadcast(this, 0, alarmIntent, 0) != null &amp;&amp; alarmManager != null) {</span>
+<span class="s2">//                alarmManager.cancel(pendingIntent);</span>
+<span class="s2">//                Toast.makeText(this,&quot;Notifications were disabled&quot;,Toast.LENGTH_SHORT).show();</span>
+<span class="s2">//            }</span>
+<span class="s2">//            pm.setComponentEnabledSetting(receiver,</span>
+<span class="s2">//                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,</span>
+<span class="s2">//                    PackageManager.DONT_KILL_APP);</span>
+<span class="s2">//        }</span>
+    <span class="s1">}</span>
+
+
+    <span class="s0">void </span><span class="s1">changeActivity() {</span>
+        <span class="s1">btn_timer.setOnClickListener(</span><span class="s0">new </span><span class="s1">View.OnClickListener() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">onClick(View view) {</span>
+                <span class="s1">Intent intent = </span><span class="s0">new </span><span class="s1">Intent(MainActivity.</span><span class="s0">this, </span><span class="s1">TimerActivity.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+                <span class="s1">startActivity(intent)</span><span class="s0">;</span>
+                <span class="s1">finish()</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">})</span><span class="s0">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

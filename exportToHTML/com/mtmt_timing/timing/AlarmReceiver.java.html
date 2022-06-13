@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>AlarmReceiver.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+AlarmReceiver.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.mtmt_timing.team_project</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">android.app.Notification</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.NotificationChannel</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.NotificationManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.app.PendingIntent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.BroadcastReceiver</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.ContentResolver</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Context</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.Intent</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.content.SharedPreferences</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.MediaPlayer</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.Ringtone</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.media.RingtoneManager</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.net.Uri</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.os.Vibrator</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">android.widget.Toast</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">androidx.core.app.NotificationCompat</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.text.SimpleDateFormat</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Calendar</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Date</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.util.Locale</span><span class="s0">;</span>
+
+
+<span class="s0">import static </span><span class="s1">android.content.Context.MODE_PRIVATE</span><span class="s0">;</span>
+
+<span class="s0">public class </span><span class="s1">AlarmReceiver </span><span class="s0">extends </span><span class="s1">BroadcastReceiver {</span>
+
+    <span class="s1">MediaPlayer mediaPlayer</span><span class="s0">;</span>
+
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">onReceive(Context context</span><span class="s0">, </span><span class="s1">Intent intent) {</span>
+
+
+        <span class="s1">NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)</span><span class="s0">;</span>
+        <span class="s1">Intent notificationIntent = </span><span class="s0">new </span><span class="s1">Intent(context</span><span class="s0">, </span><span class="s1">MainActivity.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP</span>
+                <span class="s1">| Intent.FLAG_ACTIVITY_SINGLE_TOP)</span><span class="s0">;</span>
+
+        <span class="s1">PendingIntent pendingI = PendingIntent.getActivity(context</span><span class="s0">, </span><span class="s2">0</span><span class="s0">,</span>
+                <span class="s1">notificationIntent</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">;</span>
+
+
+        <span class="s1">NotificationCompat.Builder builder = </span><span class="s0">new </span><span class="s1">NotificationCompat.Builder(context</span><span class="s0">, </span><span class="s3">&quot;default&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+
+        <span class="s4">//OREO API 26 이상에서는 채널 필요</span>
+        <span class="s0">if </span><span class="s1">(android.os.Build.VERSION.SDK_INT &gt;= android.os.Build.VERSION_CODES.O) {</span>
+
+            <span class="s1">builder.setSmallIcon(R.drawable.ic_launcher_foreground)</span><span class="s0">; </span><span class="s4">//mipmap 사용시 Oreo 이상에서 시스템 UI 에러남</span>
+
+
+            <span class="s1">String channelName =</span><span class="s3">&quot;매일 알람 채널&quot;</span><span class="s0">;</span>
+            <span class="s1">String description = </span><span class="s3">&quot;매일 정해진 시간에 알람합니다.&quot;</span><span class="s0">;</span>
+            <span class="s0">int </span><span class="s1">importance = NotificationManager.IMPORTANCE_HIGH</span><span class="s0">; </span><span class="s4">//소리와 알림메시지를 같이 보여줌</span>
+
+            <span class="s1">NotificationChannel channel = </span><span class="s0">new </span><span class="s1">NotificationChannel(</span><span class="s3">&quot;default&quot;</span><span class="s0">, </span><span class="s1">channelName</span><span class="s0">, </span><span class="s1">importance)</span><span class="s0">;</span>
+            <span class="s1">channel.setDescription(description)</span><span class="s0">;</span>
+
+            <span class="s0">if </span><span class="s1">(notificationManager != </span><span class="s0">null</span><span class="s1">) {</span>
+                <span class="s4">// 노티피케이션 채널을 시스템에 등록</span>
+                <span class="s1">notificationManager.createNotificationChannel(channel)</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span><span class="s0">else </span><span class="s1">builder.setSmallIcon(R.mipmap.ic_launcher)</span><span class="s0">; </span><span class="s4">// Oreo 이하에서 mipmap 사용하지 않으면 Couldn't create icon: StatusBarIcon 에러남</span>
+
+       <span class="s1">MediaPlayer mediaPlayer = MediaPlayer.create(context</span><span class="s0">, </span><span class="s1">R.raw.alarm_sound)</span><span class="s0">;</span>
+       <span class="s1">mediaPlayer.start()</span><span class="s0">;</span>
+
+
+
+
+        <span class="s1">builder.setAutoCancel(</span><span class="s0">true</span><span class="s1">)</span>
+                <span class="s1">.setDefaults(NotificationCompat.DEFAULT_ALL)</span>
+                <span class="s1">.setWhen(System.currentTimeMillis())</span>
+
+                <span class="s1">.setTicker(</span><span class="s3">&quot;{Time to watch some cool stuff!}&quot;</span><span class="s1">)</span>
+                <span class="s1">.setContentTitle(</span><span class="s3">&quot;설정한 알람시간이 되었습니다&quot;</span><span class="s1">)</span>
+                <span class="s1">.setContentText(</span><span class="s3">&quot;터치시 앱으로 돌아갑니다&quot;</span><span class="s1">)</span>
+                <span class="s1">.setContentInfo(</span><span class="s3">&quot;INFO&quot;</span><span class="s1">)</span>
+                <span class="s1">.setContentIntent(pendingI)</span><span class="s0">;</span>
+
+
+        <span class="s0">if </span><span class="s1">(notificationManager != </span><span class="s0">null</span><span class="s1">) {</span>
+
+            <span class="s4">// 노티피케이션 동작시킴</span>
+            <span class="s1">notificationManager.notify(</span><span class="s2">1234</span><span class="s0">, </span><span class="s1">builder.build())</span><span class="s0">;</span>
+
+            <span class="s1">Calendar nextNotifyTime = Calendar.getInstance()</span><span class="s0">;</span>
+
+            <span class="s4">// 내일 같은 시간으로 알람시간 결정</span>
+<span class="s4">//            nextNotifyTime.add(Calendar.DATE, 1);</span>
+
+            <span class="s4">//  Preference에 설정한 값 저장</span>
+            <span class="s1">SharedPreferences.Editor editor = context.getSharedPreferences(</span><span class="s3">&quot;daily alarm&quot;</span><span class="s0">, </span><span class="s1">MODE_PRIVATE).edit()</span><span class="s0">;</span>
+            <span class="s1">editor.putLong(</span><span class="s3">&quot;nextNotifyTime&quot;</span><span class="s0">, </span><span class="s1">nextNotifyTime.getTimeInMillis())</span><span class="s0">;</span>
+            <span class="s1">editor.apply()</span><span class="s0">;</span>
+
+            <span class="s1">Date currentDateTime = nextNotifyTime.getTime()</span><span class="s0">;</span>
+            <span class="s1">String date_text = </span><span class="s0">new </span><span class="s1">SimpleDateFormat(</span><span class="s3">&quot;yyyy년 MM월 dd일 EE요일 a hh시 mm분 &quot;</span><span class="s0">, </span><span class="s1">Locale.getDefault()).format(currentDateTime)</span><span class="s0">;</span>
+            <span class="s1">Toast.makeText(context.getApplicationContext()</span><span class="s0">,</span><span class="s3">&quot;다음 알람은 &quot; </span><span class="s1">+ date_text + </span><span class="s3">&quot;으로 알람이 설정되었습니다!&quot;</span><span class="s0">, </span><span class="s1">Toast.LENGTH_SHORT).show()</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>
